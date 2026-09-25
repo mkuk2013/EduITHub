@@ -156,13 +156,13 @@ export function DashboardNav({ userName, profileImageUrl, unreadCount }: Dashboa
           </button>
 
           <Link href={ROUTES.dashboard} className="flex items-center gap-2">
-            <div className="relative h-9 w-9 rounded-xl overflow-hidden bg-white border border-slate-200 shadow-xs shrink-0 flex items-center justify-center p-0.5">
+            <div className="relative h-10 w-10 shrink-0">
               <Image
                 src="/logo.png"
                 alt="Edu IT Hub Academy"
-                width={36}
-                height={36}
-                className="object-contain w-full h-full"
+                fill
+                sizes="40px"
+                className="object-contain"
               />
             </div>
             <span className="font-extrabold font-heading text-base tracking-tight text-slate-900">
@@ -260,13 +260,13 @@ export function DashboardNav({ userName, profileImageUrl, unreadCount }: Dashboa
         {/* Brand Header */}
         <div className="flex h-20 items-center justify-between border-b border-slate-100 px-6">
           <Link href={ROUTES.dashboard} className="flex items-center gap-3 group">
-            <div className="relative h-11 w-11 rounded-2xl overflow-hidden bg-white border border-slate-200 shadow-md shadow-slate-200/50 transition-transform group-hover:scale-105 shrink-0 flex items-center justify-center p-0.5">
+            <div className="relative h-12 w-12 shrink-0 transition-transform group-hover:scale-105">
               <Image
                 src="/logo.png"
                 alt="Edu IT Hub Academy"
-                width={44}
-                height={44}
-                className="object-contain w-full h-full"
+                fill
+                sizes="48px"
+                className="object-contain"
                 priority
               />
             </div>

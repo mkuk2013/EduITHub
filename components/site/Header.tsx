@@ -87,13 +87,13 @@ export function Header() {
             className="group flex items-center gap-2.5 sm:gap-3 rounded-lg focus-visible:outline-none shrink-0"
             aria-label={`${BRAND.name} — home`}
           >
-            <div className="relative h-10 w-10 sm:h-11 sm:w-11 rounded-xl overflow-hidden bg-white border border-[var(--border)] shadow-xs transition-transform group-hover:scale-105 shrink-0 flex items-center justify-center p-0.5">
+            <div className="relative h-10 w-10 sm:h-11 sm:w-11 shrink-0 transition-transform group-hover:scale-105">
               <Image
                 src="/logo.png"
                 alt="Edu IT Hub Academy Logo"
-                width={44}
-                height={44}
-                className="object-contain w-full h-full"
+                fill
+                sizes="48px"
+                className="object-contain"
                 priority
               />
             </div>

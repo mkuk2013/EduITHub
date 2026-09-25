@@ -64,13 +64,13 @@ export async function Footer() {
         <div className="space-y-5 flex flex-col justify-between">
           <div className="space-y-4">
             <div className="flex items-center gap-2.5">
-              <div className="relative h-11 w-11 rounded-xl overflow-hidden bg-white border border-white/20 shadow-md shrink-0 flex items-center justify-center p-0.5">
+              <div className="relative h-12 w-12 shrink-0">
                 <Image
                   src="/logo.png"
                   alt="Edu IT Hub Academy Logo"
-                  width={44}
-                  height={44}
-                  className="object-contain w-full h-full"
+                  fill
+                  sizes="48px"
+                  className="object-contain"
                 />
               </div>
               <div className="inline-flex flex-col">
