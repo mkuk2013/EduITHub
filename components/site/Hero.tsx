@@ -1,5 +1,7 @@
 "use client";
 
+import { useState } from "react";
+import Link from "next/link";
 import {
   ArrowRight,
   Sparkles,
@@ -204,7 +206,7 @@ export function Hero() {
                             </span>
                             <span className="text-emerald-400 font-bold">1080p HD</span>
                           </div>
-                          <p className="text-slate-400 pt-1">{"{"// Instructor Live Demonstration"}"}</p>
+                          <p className="text-slate-400 pt-1">{"// Instructor Live Demonstration"}</p>
                           <p>
                             <span className="text-pink-400">export default</span> <span className="text-blue-300">function</span> <span className="text-yellow-300">EduITHubLMS</span>() &#123;
                           </p>
@@ -250,7 +252,7 @@ export function Hero() {
                           <Terminal className="w-3.5 h-3.5 text-[var(--accent)]" />
                           <span>terminal — student-workspace</span>
                         </div>
-                        <p className="text-emerald-400">{"{"// Next.js + Python AI Career Stack"}"}</p>
+                        <p className="text-emerald-400">{"// Next.js + Python AI Career Stack"}</p>
                         <p className="mt-1"><span className="text-pink-400">const</span> <span className="text-blue-300">academy</span> = <span className="text-yellow-300">&quot;Edu IT Hub&quot;</span>;</p>
                         <p><span className="text-pink-400">const</span> <span className="text-blue-300">partner</span> = <span className="text-yellow-300">&quot;Super Sys-Tech Umerkot&quot;</span>;</p>
                         <p><span className="text-pink-400">const</span> <span className="text-blue-300">certification</span> = <span className="text-emerald-300">&quot;Super Sys-Tech Verified&quot;</span>;</p>

@@ -370,7 +370,7 @@ export default async function DashboardPage() {
                       <p className="text-xs font-bold text-slate-800 line-clamp-1">{n.title}</p>
                       <span className="text-[10px] text-slate-400 font-mono shrink-0">{timeAgo(n.createdAt)}</span>
                     </div>
-                    <p className="text-xs text-slate-500 mt-0.5 line-clamp-2 leading-relaxed">{n.body}</p>
+                    <p className="text-xs text-slate-500 mt-0.5 line-clamp-2 leading-relaxed">{n.message}</p>
                   </li>
                 ))}
               </ul>
