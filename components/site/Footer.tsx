@@ -1,17 +1,14 @@
 import Image from "next/image";
 import Link from "next/link";
-import { 
-  GraduationCap, 
-  Mail, 
-  MapPin, 
-  Phone, 
-  Clock, 
+import {
+  Mail,
+  MapPin,
+  Phone,
+  Clock,
   MessageCircle,
-  Sparkles,
-  ArrowRight,
-  ShieldCheck
+  ArrowRight
 } from "lucide-react";
-import { BRAND, ROUTES } from "@/lib/constants";
+import { ROUTES } from "@/lib/constants";
 import { getAcademyInfo, getPublishedCourses } from "@/lib/site";
 
 const NAV_LINKS = [

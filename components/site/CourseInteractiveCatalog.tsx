@@ -3,7 +3,7 @@
 import { useState, useMemo } from "react";
 import { CourseCard } from "@/components/site/CourseCard";
 import type { PublicCourseCard } from "@/lib/site";
-import { Search, LayoutGrid, X } from "lucide-react";
+import { Search, LayoutGrid, X, Sparkles } from "lucide-react";
 import {
   ReactLogo,
   PythonLogo,

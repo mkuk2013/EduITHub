@@ -252,7 +252,7 @@ export function getCourseOriginalBrand(slug: string, title: string): CourseOrigi
 export function CourseOriginalBanner({
   slug,
   title,
-  thumbnail,
+  thumbnail: _thumbnail,
   className = "",
 }: {
   slug: string;

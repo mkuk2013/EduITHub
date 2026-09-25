@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { BookOpen, GraduationCap, Users, Award, Sparkles } from "lucide-react";
+import { BookOpen, GraduationCap, Users, Award } from "lucide-react";
 
 export interface StatItem {
   label: string;

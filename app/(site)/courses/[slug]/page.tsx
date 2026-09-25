@@ -9,7 +9,6 @@ import {
   BookOpen,
   CalendarDays,
   Clock,
-  GraduationCap,
   ListChecks,
   MonitorSmartphone,
   UserRound,
