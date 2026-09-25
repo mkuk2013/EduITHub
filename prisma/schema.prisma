@@ -1,0 +1,371 @@
+// Prisma schema for Edu IT Hub Academy (LMS)
+// PostgreSQL. All money is stored as integer PKR (no decimals).
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ---------------------------------------------------------------------------
+// Enums
+// ---------------------------------------------------------------------------
+
+enum UserRole {
+  ADMIN
+  STUDENT
+  // INSTRUCTOR and SUPER_ADMIN can be added later if the platform needs them.
+}
+
+enum UserStatus {
+  PENDING_APPROVAL
+  APPROVED
+  REJECTED
+  SUSPENDED
+}
+
+enum CourseStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum EnrollmentStatus {
+  PENDING_PAYMENT
+  PENDING_VERIFICATION
+  ACTIVE
+  SUSPENDED
+  CANCELLED
+  EXPIRED
+}
+
+enum PaymentStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  CORRECTION_REQUESTED
+}
+
+enum PaymentMethod {
+  EASYPaisa
+  JAZZCASH
+  BANK_TRANSFER
+  OTHER
+}
+
+enum NotificationType {
+  REGISTRATION_RECEIVED
+  ACCOUNT_APPROVED
+  ACCOUNT_REJECTED
+  PAYMENT_SUBMITTED
+  PAYMENT_APPROVED
+  PAYMENT_REJECTED
+  PAYMENT_CORRECTION_REQUESTED
+  ENROLLMENT_ACTIVATED
+  FEE_REMINDER
+  CLASS_REMINDER
+  ANNOUNCEMENT
+  COURSE_UPDATE
+  GENERAL
+}
+
+enum AnnouncementStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum CourseMaterialType {
+  PDF
+  VIDEO
+  DOCUMENT
+  LINK
+  ASSIGNMENT
+  NOTE
+}
+
+// ---------------------------------------------------------------------------
+// Auth / users
+// ---------------------------------------------------------------------------
+
+model User {
+  id              String     @id @default(cuid())
+  name            String
+  email           String     @unique
+  passwordHash    String
+  role            UserRole   @default(STUDENT)
+  status          UserStatus @default(PENDING_APPROVAL)
+  emailVerifiedAt DateTime?
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+
+  studentProfile   StudentProfile?
+  enrollments      Enrollment[]
+  payments         Payment[]
+  notifications    Notification[]
+  announcements    Announcement[] @relation("AnnouncementAuthor")
+  verifiedPayments Payment[]      @relation("PaymentVerifier")
+  auditLogs        AuditLog[]
+  emailLogs        EmailLog[]
+
+  @@index([role, status])
+  @@map("users")
+}
+
+model StudentProfile {
+  id           String   @id @default(cuid())
+  userId       String   @unique
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  phone        String?  @unique
+  profileImage String?
+  address      String?
+  city         String?
+  extraInfo    String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@map("student_profiles")
+}
+
+// ---------------------------------------------------------------------------
+// Courses
+// ---------------------------------------------------------------------------
+
+model Course {
+  id               String       @id @default(cuid())
+  title            String
+  slug             String       @unique
+  shortDescription String
+  description      String       @db.Text
+  thumbnail        String?
+  monthlyFee       Int // PKR, integer only
+  duration         String // e.g. "3 Months"
+  mode             String       @default("Online")
+  status           CourseStatus @default(DRAFT)
+  // Admin-managed syllabus extras (nullable JSON: string[]).
+  // Shown on the public course detail page when present.
+  requirements     Json?
+  benefits         Json?
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+
+  instructors   CourseInstructor[]
+  enrollments   Enrollment[]
+  payments      Payment[]
+  schedule      ClassSchedule?
+  announcements Announcement[]
+  modules       CourseModule[]
+
+  @@index([status, slug])
+  @@map("courses")
+}
+
+model Instructor {
+  id           String   @id @default(cuid())
+  name         String
+  bio          String?  @db.Text
+  profileImage String?
+  experience   String?
+  skills       String[]
+  contact      String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  courses   CourseInstructor[]
+  schedules ClassSchedule[]
+
+  @@map("instructors")
+}
+
+model CourseInstructor {
+  id           String     @id @default(cuid())
+  courseId     String
+  course       Course     @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  instructorId String
+  instructor   Instructor @relation(fields: [instructorId], references: [id], onDelete: Cascade)
+
+  @@unique([courseId, instructorId])
+  @@map("course_instructors")
+}
+
+model CourseModule {
+  id          String   @id @default(cuid())
+  courseId    String
+  course      Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  title       String
+  description String?  @db.Text
+  order       Int
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  materials CourseMaterial[]
+
+  @@unique([courseId, order])
+  @@map("course_modules")
+}
+
+model CourseMaterial {
+  id        String             @id @default(cuid())
+  moduleId  String
+  module    CourseModule       @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  title     String
+  type      CourseMaterialType
+  url       String             @db.Text
+  order     Int
+  createdAt DateTime           @default(now())
+
+  @@index([moduleId, order])
+  @@map("course_materials")
+}
+
+// ---------------------------------------------------------------------------
+// Enrollments & payments
+// ---------------------------------------------------------------------------
+
+model Enrollment {
+  id         String           @id @default(cuid())
+  studentId  String
+  student    User             @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  courseId   String
+  course     Course           @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  status     EnrollmentStatus @default(PENDING_PAYMENT)
+  enrolledAt DateTime         @default(now())
+  expiresAt  DateTime? // monthly validity end
+  createdAt  DateTime         @default(now())
+  updatedAt  DateTime         @updatedAt
+
+  payments Payment[]
+
+  @@unique([studentId, courseId])
+  @@index([status])
+  @@map("enrollments")
+}
+
+model Payment {
+  id            String        @id @default(cuid())
+  studentId     String
+  student       User          @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  courseId      String
+  course        Course        @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  enrollmentId  String?
+  enrollment    Enrollment?   @relation(fields: [enrollmentId], references: [id], onDelete: SetNull)
+  amount        Int // PKR, integer only
+  month         String // e.g. "2026-09"
+  paymentMethod PaymentMethod
+  transactionId String // sender's transaction / TID reference
+  paymentDate   DateTime
+  proofImage    String? // path under public/uploads/payments/
+  status        PaymentStatus @default(PENDING)
+  verifiedById  String?
+  verifiedBy    User?         @relation("PaymentVerifier", fields: [verifiedById], references: [id], onDelete: SetNull)
+  verifiedAt    DateTime?
+  adminNote     String?       @db.Text
+  createdAt     DateTime      @default(now())
+
+  @@index([studentId, courseId, month])
+  @@index([status])
+  @@map("payments")
+}
+
+// ---------------------------------------------------------------------------
+// Scheduling (meeting URL is NEVER exposed publicly)
+// ---------------------------------------------------------------------------
+
+model ClassSchedule {
+  id           String      @id @default(cuid())
+  courseId     String      @unique
+  course       Course      @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  instructorId String?
+  instructor   Instructor? @relation(fields: [instructorId], references: [id], onDelete: SetNull)
+  meetingUrl   String?     @db.Text // NEVER select in public/unauthorized queries
+  days         String[] // e.g. ["Mon", "Wed", "Fri"]
+  startTime    String // e.g. "18:00"
+  endTime      String // e.g. "19:30"
+  timezone     String      @default("Asia/Karachi")
+  instructions String?     @db.Text
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  @@map("class_schedules")
+}
+
+// ---------------------------------------------------------------------------
+// Notifications & announcements
+// ---------------------------------------------------------------------------
+
+model Notification {
+  id        String           @id @default(cuid())
+  userId    String
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title     String
+  message   String           @db.Text
+  type      NotificationType @default(GENERAL)
+  link      String?
+  readAt    DateTime?
+  createdAt DateTime         @default(now())
+
+  @@index([userId, readAt])
+  @@map("notifications")
+}
+
+model Announcement {
+  id          String             @id @default(cuid())
+  title       String
+  content     String             @db.Text
+  courseId    String? // null = visible to all students
+  course      Course?            @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  publishedAt DateTime?
+  status      AnnouncementStatus @default(DRAFT)
+  createdById String
+  createdBy   User               @relation("AnnouncementAuthor", fields: [createdById], references: [id], onDelete: Restrict)
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+
+  @@index([status, publishedAt])
+  @@map("announcements")
+}
+
+// ---------------------------------------------------------------------------
+// Admin / system
+// ---------------------------------------------------------------------------
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  adminId   String
+  admin     User     @relation(fields: [adminId], references: [id], onDelete: Cascade)
+  action    String
+  entity    String
+  entityId  String
+  metadata  Json?
+  createdAt DateTime @default(now())
+
+  @@index([adminId, createdAt])
+  @@map("audit_logs")
+}
+
+model EmailLog {
+  id        String   @id @default(cuid())
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  email     String
+  type      String
+  subject   String
+  status    String // SENT | FAILED | SKIPPED
+  error     String?  @db.Text
+  sentAt    DateTime @default(now())
+  createdAt DateTime @default(now())
+
+  @@index([email, createdAt])
+  @@map("email_logs")
+}
+
+model Setting {
+  key       String   @id
+  value     String   @db.Text
+  updatedAt DateTime @updatedAt
+
+  @@map("settings")
+}

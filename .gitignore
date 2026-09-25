@@ -1,0 +1,31 @@
+# Dependencies
+/node_modules
+
+# Next.js build output
+/.next/
+/out/
+
+# Prisma
+# (migrations are committed; only local client output is ignored if customized)
+
+# Uploads (user-submitted payment proofs, profile images — persisted on the
+# server / volume, never committed)
+/public/uploads
+
+# Environment files (never commit secrets)
+.env*
+!.env.example
+
+# TypeScript
+*.tsbuildinfo
+next-env.d.ts
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
