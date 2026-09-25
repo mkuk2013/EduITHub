@@ -1,6 +1,6 @@
 import type { MetadataRoute } from "next";
 
-const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://eduitubacademy.example").replace(
+const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://eduithub.com").replace(
   /\/$/,
   "",
 );

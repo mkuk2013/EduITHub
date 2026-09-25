@@ -1,7 +1,7 @@
 import type { MetadataRoute } from "next";
 import { prisma } from "@/lib/prisma";
 
-const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://eduitubacademy.example").replace(
+const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://eduithub.com").replace(
   /\/$/,
   "",
 );
