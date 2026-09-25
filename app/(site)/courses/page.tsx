@@ -15,6 +15,9 @@ export const metadata: Metadata = buildSiteMetadata({
   path: "/courses",
 });
 
+// Cache on Vercel Edge CDN for ultra-fast response
+export const revalidate = 120;
+
 interface CoursesPageProps {
   searchParams: Promise<{ q?: string }>;
 }

@@ -11,6 +11,8 @@ export const metadata = buildSiteMetadata({
   path: "/contact",
 });
 
+export const revalidate = 300;
+
 export default async function ContactPage() {
   const info = await getAcademyInfo();
   const whatsappLink = info.whatsapp

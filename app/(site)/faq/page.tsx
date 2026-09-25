@@ -13,6 +13,8 @@ export const metadata = buildSiteMetadata({
   path: "/faq",
 });
 
+export const revalidate = 300;
+
 const FAQS: FaqItem[] = [
   {
     q: "What is Edu IT Hub Academy?",

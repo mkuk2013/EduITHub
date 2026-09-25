@@ -23,6 +23,8 @@ export const metadata = buildSiteMetadata({
   path: "/about",
 });
 
+export const revalidate = 300;
+
 const VALUES = [
   {
     icon: Code2,

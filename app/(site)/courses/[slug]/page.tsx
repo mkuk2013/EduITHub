@@ -21,6 +21,20 @@ import { formatPKR } from "@/lib/format";
 import { buildSiteMetadata } from "@/lib/seo";
 import { CourseOriginalBanner, getCourseOriginalBrand } from "@/components/site/CourseOriginalBanner";
 
+export const revalidate = 120;
+
+export async function generateStaticParams() {
+  try {
+    const courses = await prisma.course.findMany({
+      where: { status: "PUBLISHED" },
+      select: { slug: true },
+    });
+    return courses.map((c) => ({ slug: c.slug }));
+  } catch {
+    return [];
+  }
+}
+
 interface CourseDetailPageProps {
   params: Promise<{ slug: string }>;
 }

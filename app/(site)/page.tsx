@@ -32,6 +32,9 @@ export const metadata = buildSiteMetadata({
   path: "/",
 });
 
+// Cache on Vercel's global edge network for instant loading, revalidating in background every 2 minutes
+export const revalidate = 120;
+
 const BENTO_FEATURES = [
   {
     icon: Video,
