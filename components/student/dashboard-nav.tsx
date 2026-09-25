@@ -1,5 +1,6 @@
 "use client";
 
+import type { ComponentType } from "react";
 import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
@@ -14,17 +15,13 @@ import {
   Settings,
   Menu,
   X,
-  Sparkles,
   MessageCircle,
-  Phone,
   ShieldCheck,
-  ChevronRight,
-  LogOut,
-  Calendar,
-  ExternalLink
+  ExternalLink,
+  type LucideIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { BRAND, ROUTES } from "@/lib/constants";
+import { ROUTES } from "@/lib/constants";
 import { LogoutButton } from "./logout-button";
 
 interface NavGroup {
@@ -32,7 +29,7 @@ interface NavGroup {
   items: Array<{
     label: string;
     href: string;
-    icon: any;
+    icon: LucideIcon | ComponentType<{ className?: string }>;
     badgeKey?: "notifications";
   }>;
 }
