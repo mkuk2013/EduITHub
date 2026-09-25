@@ -32,9 +32,6 @@
     "typescript": "^5.9.3"
   },
   "name": "edu-it-hub-academy",
-  "prisma": {
-    "seed": "tsx prisma/seed.ts"
-  },
   "private": true,
   "scripts": {
     "postinstall": "prisma generate",

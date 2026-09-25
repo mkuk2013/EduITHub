@@ -86,7 +86,7 @@ export default async function ContactPage() {
                         WhatsApp
                       </span>
                       <a
-                        href="https://wa.me/923363268833"
+                        href={whatsappLink || "https://wa.me/923363268833"}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="font-medium text-white transition-colors hover:text-amber-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400 rounded-sm font-mono"

@@ -4,14 +4,10 @@ import {
   Code2,
   GraduationCap,
   LayoutGrid,
-  Mail,
-  MapPin,
-  Phone,
   Quote,
   UserPlus,
   Video,
   Wallet,
-  Sparkles,
   Award,
   Clock,
   Zap,
@@ -19,14 +15,13 @@ import {
   Star,
   CheckCircle2,
   ChevronRight,
-  ShieldCheck,
   CreditCard,
   Handshake,
   Check
 } from "lucide-react";
 import { ROUTES } from "@/lib/constants";
 import { buildSiteMetadata } from "@/lib/seo";
-import { getAcademyInfo, getPublishedCourses, getSiteStats, getTestimonials } from "@/lib/site";
+import { getPublishedCourses, getTestimonials } from "@/lib/site";
 import { Hero } from "@/components/site/Hero";
 import { CourseInteractiveCatalog } from "@/components/site/CourseInteractiveCatalog";
 
@@ -123,10 +118,8 @@ const FAQ_PREVIEW = [
 ];
 
 export default async function HomePage() {
-  const [info, courses, stats, testimonials] = await Promise.all([
-    getAcademyInfo(),
+  const [courses, testimonials] = await Promise.all([
     getPublishedCourses(),
-    getSiteStats(),
     getTestimonials(),
   ]);
 
