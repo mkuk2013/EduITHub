@@ -221,6 +221,9 @@ export async function requireAdmin(): Promise<SessionUser> {
   const user = await getSessionUser();
   if (!user) return redirectTo(ROUTES.login);
   if (user.role !== "ADMIN" || user.status !== "APPROVED") {
+    if (user.role === "INSTRUCTOR" && user.status === "APPROVED") {
+      return redirectTo(ROUTES.instructor);
+    }
     if (user.role === "STUDENT" && user.status === "APPROVED") {
       return redirectTo(ROUTES.dashboard);
     }
@@ -228,3 +231,20 @@ export async function requireAdmin(): Promise<SessionUser> {
   }
   return user;
 }
+
+/**
+ * Use at the top of every instructor-only server action / page / route.
+ * Allows INSTRUCTOR and ADMIN. Redirects students to /dashboard.
+ */
+export async function requireInstructor(): Promise<SessionUser> {
+  const user = await getSessionUser();
+  if (!user) return redirectTo(ROUTES.login);
+  if (user.role === "STUDENT" && user.status === "APPROVED") {
+    return redirectTo(ROUTES.dashboard);
+  }
+  if ((user.role !== "INSTRUCTOR" && user.role !== "ADMIN") || user.status !== "APPROVED") {
+    return redirectTo(statusPath(user.status));
+  }
+  return user;
+}
+

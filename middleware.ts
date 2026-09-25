@@ -12,7 +12,7 @@ import { ROUTES } from "@/lib/constants";
  * (well below Vercel's 1 MB limit).
  */
 
-type UserRole = "ADMIN" | "STUDENT";
+type UserRole = "ADMIN" | "STUDENT" | "INSTRUCTOR";
 type UserStatus = "PENDING_APPROVAL" | "APPROVED" | "REJECTED" | "SUSPENDED";
 
 interface MiddlewareUser {
@@ -79,7 +79,12 @@ export default async function middleware(req: NextRequest) {
     // Signed-in users have no business on the auth pages.
     if ((pathname === ROUTES.login || pathname === ROUTES.register) && user) {
       if (user.status === "APPROVED") {
-        const dest = user.role === "ADMIN" ? ROUTES.admin : ROUTES.dashboard;
+        const dest =
+          user.role === "ADMIN"
+            ? ROUTES.admin
+            : user.role === "INSTRUCTOR"
+            ? ROUTES.instructor
+            : ROUTES.dashboard;
         return NextResponse.redirect(new URL(dest, req.url));
       }
       return NextResponse.redirect(new URL(statusPath(user.status), req.url));
@@ -93,11 +98,26 @@ export default async function middleware(req: NextRequest) {
     return NextResponse.next();
   }
 
+  // --- Instructor area -----------------------------------------------------
+  if (startsWithPath(pathname, ROUTES.instructor)) {
+    if (!user) return loginRedirect(req, pathname);
+    if (user.role === "STUDENT") {
+      return NextResponse.redirect(new URL(ROUTES.dashboard, req.url));
+    }
+    if ((user.role !== "INSTRUCTOR" && user.role !== "ADMIN") || user.status !== "APPROVED") {
+      return NextResponse.redirect(new URL(statusPath(user.status), req.url));
+    }
+    return NextResponse.next();
+  }
+
   // --- Student area --------------------------------------------------------
   if (startsWithPath(pathname, ROUTES.dashboard)) {
     if (!user) return loginRedirect(req, pathname);
     if (user.role === "ADMIN") {
       return NextResponse.redirect(new URL(ROUTES.admin, req.url));
+    }
+    if (user.role === "INSTRUCTOR") {
+      return NextResponse.redirect(new URL(ROUTES.instructor, req.url));
     }
     if (user.role !== "STUDENT" || user.status !== "APPROVED") {
       return NextResponse.redirect(new URL(statusPath(user.status), req.url));
@@ -109,6 +129,9 @@ export default async function middleware(req: NextRequest) {
   if (startsWithPath(pathname, ROUTES.admin)) {
     if (!user) return loginRedirect(req, pathname);
     if (user.role !== "ADMIN" || user.status !== "APPROVED") {
+      if (user.role === "INSTRUCTOR" && user.status === "APPROVED") {
+        return NextResponse.redirect(new URL(ROUTES.instructor, req.url));
+      }
       if (user.role === "STUDENT" && user.status === "APPROVED") {
         return NextResponse.redirect(new URL(ROUTES.dashboard, req.url));
       }

@@ -17,7 +17,7 @@ datasource db {
 enum UserRole {
   ADMIN
   STUDENT
-  // INSTRUCTOR and SUPER_ADMIN can be added later if the platform needs them.
+  INSTRUCTOR
 }
 
 enum UserStatus {
@@ -102,14 +102,15 @@ model User {
   createdAt       DateTime   @default(now())
   updatedAt       DateTime   @updatedAt
 
-  studentProfile   StudentProfile?
-  enrollments      Enrollment[]
-  payments         Payment[]
-  notifications    Notification[]
-  announcements    Announcement[] @relation("AnnouncementAuthor")
-  verifiedPayments Payment[]      @relation("PaymentVerifier")
-  auditLogs        AuditLog[]
-  emailLogs        EmailLog[]
+  studentProfile    StudentProfile?
+  instructorProfile Instructor?
+  enrollments       Enrollment[]
+  payments          Payment[]
+  notifications     Notification[]
+  announcements     Announcement[] @relation("AnnouncementAuthor")
+  verifiedPayments  Payment[]      @relation("PaymentVerifier")
+  auditLogs         AuditLog[]
+  emailLogs         EmailLog[]
 
   @@index([role, status])
   @@map("users")
@@ -165,7 +166,10 @@ model Course {
 
 model Instructor {
   id           String   @id @default(cuid())
+  userId       String?  @unique
+  user         User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
   name         String
+  email        String?  @unique
   bio          String?  @db.Text
   profileImage String?
   experience   String?

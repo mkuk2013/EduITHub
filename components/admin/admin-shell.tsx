@@ -20,6 +20,7 @@ import {
   ShieldCheck,
   UserCircle2,
   Users,
+  UserCheck,
   Wallet,
   X,
   ExternalLink,
@@ -61,6 +62,7 @@ export function AdminShell({ userName, userEmail, pendingStudents, pendingPaymen
       title: "Core Operations",
       items: [
         { href: ROUTES.admin, label: "Overview Dashboard", icon: LayoutDashboard, exact: true },
+        { href: ROUTES.adminInstructors, label: "Instructors & Faculty", icon: UserCheck },
         { href: ROUTES.adminStudents, label: "All Students", icon: Users },
         { href: ROUTES.adminApprovals, label: "Student Approvals", icon: CheckCircle2, badge: pendingStudents },
         { href: ROUTES.adminCourses, label: "Courses & Syllabus", icon: GraduationCap },

@@ -49,8 +49,12 @@ export const ROUTES = {
   adminSchedules: "/admin/schedules",
   adminAnnouncements: "/admin/announcements",
   adminNotifications: "/admin/notifications",
+  adminInstructors: "/admin/instructors",
   adminSettings: "/admin/settings",
   adminAuditLogs: "/admin/audit-logs",
+  instructor: "/instructor",
+  instructorClasses: "/instructor/classes",
+  instructorProfile: "/instructor/profile",
 } as const;
 
 export const PAGINATION = {

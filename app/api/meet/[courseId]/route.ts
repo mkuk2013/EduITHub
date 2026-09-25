@@ -64,46 +64,61 @@ export async function GET(
 
   const { courseId } = paramsSchema.parse(await params);
 
-  // Role + status gate (401 handled above; anything else is forbidden).
-  if (session.user.role !== "STUDENT" || session.user.status !== "APPROVED") {
-    return Response.json({ error: "Access denied." }, { status: 403 });
-  }
+  // If ADMIN, allow directly
+  if (session.user.role === "ADMIN") {
+    // Admin has access
+  } else if (session.user.role === "INSTRUCTOR" && session.user.status === "APPROVED") {
+    // Instructor teaching this course has access
+    const isAssigned = await prisma.courseInstructor.findFirst({
+      where: {
+        courseId,
+        instructor: {
+          OR: [{ userId: session.user.id }, { email: session.user.email }],
+        },
+      },
+    });
+    if (!isAssigned) {
+      return Response.json({ error: "Access denied." }, { status: 403 });
+    }
+  } else if (session.user.role === "STUDENT" && session.user.status === "APPROVED") {
+    // The student must hold an ACTIVE enrollment for this exact course.
+    const enrollment = await prisma.enrollment.findFirst({
+      where: {
+        studentId: session.user.id,
+        courseId,
+        status: EnrollmentStatus.ACTIVE,
+      },
+      select: { id: true, expiresAt: true },
+    });
+    if (!enrollment) {
+      return Response.json({ error: "Access denied." }, { status: 403 });
+    }
 
-  // The student must hold an ACTIVE enrollment for this exact course.
-  const enrollment = await prisma.enrollment.findFirst({
-    where: {
-      studentId: session.user.id,
-      courseId,
-      status: EnrollmentStatus.ACTIVE,
-    },
-    select: { id: true, expiresAt: true },
-  });
-  if (!enrollment) {
-    return Response.json({ error: "Access denied." }, { status: 403 });
-  }
+    // Enrollment validity window.
+    if (enrollment.expiresAt && enrollment.expiresAt.getTime() < Date.now()) {
+      return Response.json({ error: "Access denied." }, { status: 403 });
+    }
 
-  // Enrollment validity window.
-  if (enrollment.expiresAt && enrollment.expiresAt.getTime() < Date.now()) {
+    // An APPROVED payment must cover the current billing month.
+    const monthKey = currentMonthKey();
+    const validPayment = await prisma.payment.findFirst({
+      where: {
+        studentId: session.user.id,
+        courseId,
+        status: PaymentStatus.APPROVED,
+        month: monthKey,
+        OR: [{ enrollmentId: enrollment.id }, { enrollmentId: null }],
+      },
+      select: { id: true },
+    });
+    if (!validPayment) {
+      return Response.json(
+        { error: "A verified payment for the current month is required to join this class." },
+        { status: 403 },
+      );
+    }
+  } else {
     return Response.json({ error: "Access denied." }, { status: 403 });
-  }
-
-  // An APPROVED payment must cover the current billing month.
-  const monthKey = currentMonthKey();
-  const validPayment = await prisma.payment.findFirst({
-    where: {
-      studentId: session.user.id,
-      courseId,
-      status: PaymentStatus.APPROVED,
-      month: monthKey,
-      OR: [{ enrollmentId: enrollment.id }, { enrollmentId: null }],
-    },
-    select: { id: true },
-  });
-  if (!validPayment) {
-    return Response.json(
-      { error: "A verified payment for the current month is required to join this class." },
-      { status: 403 },
-    );
   }
 
   // Load the schedule — meetingUrl is only ever selected in this guarded route.
