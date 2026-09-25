@@ -1,24 +1,25 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { auth } from "@/lib/auth";
-import type { SessionUser } from "@/lib/auth";
+import { getToken } from "next-auth/jwt";
 import { ROUTES } from "@/lib/constants";
 
 /**
- * Route protection for Edu IT Hub Academy (auth workstream).
+ * Route protection for Edu IT Hub Academy (Edge-optimized).
  *
- * - Public: /, /courses*, /about, /contact, /faq, /login, /register,
- *   /api/health, /api/auth/*, sitemap/robots, static assets.
- * - /pending-approval and /blocked require a session (any status).
- * - /dashboard/* requires STUDENT + APPROVED (admins → /admin,
- *   other statuses → their status page).
- * - /admin/* requires ADMIN + APPROVED.
- * - Other /api/* routes require a session (401 JSON); feature routes
- *   additionally enforce requireStudent()/requireAdmin() themselves.
- *
- * Role/status always come from the server-issued JWT session — never from
- * client input.
+ * Uses `getToken` directly from `next-auth/jwt` to inspect server-signed JWTs
+ * without bundling `@prisma/client`, `bcryptjs`, or heavy server engines into
+ * the Edge Middleware function. This keeps the Edge bundle under 100 KB
+ * (well below Vercel's 1 MB limit).
  */
+
+type UserRole = "ADMIN" | "STUDENT";
+type UserStatus = "PENDING_APPROVAL" | "APPROVED" | "REJECTED" | "SUSPENDED";
+
+interface MiddlewareUser {
+  id: string;
+  role: UserRole;
+  status: UserStatus;
+}
 
 const EXACT_PUBLIC_PATHS = new Set([
   ROUTES.home,
@@ -40,7 +41,7 @@ function isPublicPath(pathname: string): boolean {
   );
 }
 
-function statusPath(status: SessionUser["status"]): string {
+function statusPath(status: UserStatus): string {
   return status === "PENDING_APPROVAL" ? ROUTES.pendingApproval : ROUTES.blocked;
 }
 
@@ -54,9 +55,24 @@ function startsWithPath(pathname: string, base: string): boolean {
   return pathname === base || pathname.startsWith(`${base}/`);
 }
 
-export default auth((req) => {
+export default async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
-  const user = req.auth?.user;
+
+  const secret = process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET;
+
+  // Retrieve token using both secure (HTTPS/Vercel) and non-secure cookie prefixes
+  const token =
+    (await getToken({ req, secret, secureCookie: true })) ||
+    (await getToken({ req, secret, secureCookie: false }));
+
+  const user: MiddlewareUser | null =
+    token?.id && token?.role && token?.status
+      ? {
+          id: token.id as string,
+          role: token.role as UserRole,
+          status: token.status as UserStatus,
+        }
+      : null;
 
   // --- Public pages -------------------------------------------------------
   if (isPublicPath(pathname)) {
@@ -110,7 +126,7 @@ export default auth((req) => {
   }
 
   return NextResponse.next();
-});
+}
 
 export const config = {
   matcher: [
